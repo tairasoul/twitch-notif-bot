@@ -16,43 +16,54 @@ public class StreamSender(GuildConfigHandler confs, DiscordSocketClient clien, S
 	
 	public async void DoGuildChecks() 
 	{
-		foreach (SocketGuild guild in client.Guilds) 
+		try 
 		{
-			if (!await configs.GuildHasConfig(guild.Id))
-				continue;
-			GuildConfig config = await configs.RetrieveConfig(guild.Id);
-			if (config.isSendingStreams && config.stream_channel != null) 
+			foreach (SocketGuild guild in client.Guilds) 
 			{
-				if (streamHandler.HasRequestForGuild(guild.Id)) 
+				if (!await configs.GuildHasConfig(guild.Id))
 					continue;
-				StreamGrabRequest request = new() 
+				GuildConfig config = await configs.RetrieveConfig(guild.Id);
+				if (config.isSendingStreams && config.stream_channel != null) 
 				{
-					first = 100,
-					guild_id = guild.Id,
-					user_ids = config.user_ids,
-					game_ids = await cache.ParseGameNames(config.game_names),
-					user_logins = config.user_logins
-				};
-				string listeningId = streamHandler.AddRequest(request);
-				Action<string, StreamResponse>? listener; 
-				listener = (string hash, StreamResponse response) => 
-				{
-					if (hash == listeningId) 
+					if (streamHandler.HasRequestForGuild(guild.Id)) 
+						continue;
+					StreamGrabRequest request = new() 
 					{
-						foreach (Structs.Stream stream in response.data) 
+						first = 100,
+						guild_id = guild.Id,
+						user_ids = config.user_ids,
+						game_ids = await cache.ParseGameNames(config.game_names),
+						user_logins = config.user_logins
+					};
+					string listeningId = streamHandler.AddRequest(request);
+					Action<string, StreamResponse>? listener; 
+					listener = (string hash, StreamResponse response) => 
+					{
+						if (hash == listeningId) 
 						{
-							if (!sent_streams.Contains(stream.id)) 
+							foreach (Structs.Stream stream in response.data) 
 							{
-								sent_streams = sent_streams.Append(stream.id).ToArray();
-								Task.Run(() => SendMessage(config, stream, guild));
+								if (!sent_streams.Contains(stream.id)) 
+								{
+									sent_streams = sent_streams.Append(stream.id).ToArray();
+									Task.Run(() => SendMessage(config, stream, guild));
+								}
 							}
 						}
-					}
-				};
-				streamHandler.StreamsGrabbed += listener;
+					};
+					streamHandler.StreamsGrabbed += listener;
+				}
 			}
 		}
-		await Task.Delay(10);
+		catch (System.InvalidCastException _) 
+		{
+			
+		}
+		catch (System.NullReferenceException _) 
+		{
+			
+		}
+		await Task.Delay(2000);
 		_ = Task.Run(DoGuildChecks);
 	}
 	
