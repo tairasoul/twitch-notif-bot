@@ -3,6 +3,18 @@ using Discord.Interactions;
 
 namespace GrassGuy.Modules;
 
+public class EmbedUtils 
+{
+	public static Embed CreateEmbedWithDescription(string description) 
+	{
+        EmbedBuilder builder = new()
+        {
+            Description = description
+        };
+        return builder.Build();
+	}
+}
+
 public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 {
 	public InteractionService Commands { get; set; }
@@ -25,7 +37,7 @@ public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 			builder.AddField("Role Pinged", config.role_id != null ? $"<@&{config.role_id}>" : "None.", true);
 			builder.AddField("Stream Channel", config.stream_channel != null ? $"<#{config.stream_channel}>" : "None.", true);
 			builder.AddField("Active", config.isSendingStreams ? "Active." : "Inactive.", true);
-			await RespondAsync(embeds: [builder.Build()]);
+			await RespondAsync(embed: builder.Build());
 		}
 		[RequireUserPermission(GuildPermission.Administrator)]
 		[Group("set", "Setter commands for stream options.")]
@@ -39,7 +51,7 @@ public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.stream_channel = channel.Id;
 				guildConfig.UpdateConfig(currentConfig);
-				await RespondAsync(text: $"Set stream channel to <#{channel.Id}>.");
+				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription($"Set stream channel to <#{channel.Id}>."));
 			}
 			[SlashCommand("status", "Set status.")]
 			public async Task Start([Summary(description: "Do we send streams?")] bool active) 
@@ -47,7 +59,7 @@ public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.isSendingStreams = active;
 				guildConfig.UpdateConfig(currentConfig);
-				await RespondAsync(text: active ? $"Now sending streams{(currentConfig.stream_channel != null ? $" in <#{currentConfig.stream_channel}>" : "")}." : ".");
+				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription(active ? $"Now sending streams{(currentConfig.stream_channel != null ? $" in <#{currentConfig.stream_channel}>" : "")}." : "."));
 			}
 			[SlashCommand("game-names", "Set game names.")]
 			public async Task SetGameIds([Summary(description: "Game names to watch. Comma separated. Maximum of 100.")] string game_names) 
@@ -57,7 +69,7 @@ public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 				currentConfig.game_names = game_names.Split(',');
 				await cache.ParseGameNames(currentConfig.game_names);
 				guildConfig.UpdateConfig(currentConfig);
-				await ModifyOriginalResponseAsync((MessageProperties props) => props.Content = $"Now watching for new streams on game names `{string.Join(", ", game_names)}`.");
+				await ModifyOriginalResponseAsync((MessageProperties props) => props.Embed = EmbedUtils.CreateEmbedWithDescription($"Now watching for new streams on game names `{string.Join(", ", game_names)}`."));
 			}
 			[SlashCommand("user-logins", "Set user logins (username in URL).")]
 			public async Task SetUserLogins([Summary(description: "User logins to watch. Comma separated. Maximum of 100.")] string user_logins) 
@@ -65,7 +77,7 @@ public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.user_logins = user_logins.Split(',');
 				guildConfig.UpdateConfig(currentConfig);
-				await RespondAsync(text: $"Now watching for new streams on user ids `{string.Join(", ", user_logins)}`.");
+				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription($"Now watching for new streams on user ids `{string.Join(", ", user_logins)}`."));
 			}
 			[SlashCommand("user-ids", "Set user ids.")]
 			public async Task SetUserIds([Summary(description: "User ids to watch. Comma separated. Maximum of 100.")] string user_ids) 
@@ -73,7 +85,7 @@ public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.user_ids = user_ids.Split(',');
 				guildConfig.UpdateConfig(currentConfig);
-				await RespondAsync(text: $"Now watching for new streams on user ids `{string.Join(", ", user_ids)}`.");
+				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription($"Now watching for new streams on user ids `{string.Join(", ", user_ids)}`."));
 			}
 			[SlashCommand("role", "Set role to ping.")]
 			public async Task SetRoleId([Summary(description: "Role to ping when new streams are found.")] IRole role) 
@@ -81,7 +93,7 @@ public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.role_id = role.Id;
 				guildConfig.UpdateConfig(currentConfig);
-				await RespondAsync(text: $"Set role id to {role.Id}");
+				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription($"Now pinging role <@&{role.Id}>"));
 			}
 		}
 		[RequireUserPermission(GuildPermission.Administrator)]
@@ -90,45 +102,45 @@ public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 		{
 			
 			public GuildConfigHandler guildConfig { get; set; }
-			[SlashCommand("u-channel", "Unset the stream channel.")]
+			[SlashCommand("channel", "Unset the stream channel.")]
 			public async Task SetStreamChannel() 
 			{
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.stream_channel = null;
 				guildConfig.UpdateConfig(currentConfig);
-				await RespondAsync(text: $"Unset stream channel.");
+				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription($"Unset stream channel."));
 			}
-			[SlashCommand("u-game-names", "Unset game names.")]
+			[SlashCommand("game-names", "Unset game names.")]
 			public async Task SetGameIds() 
 			{
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.game_names = null;
 				guildConfig.UpdateConfig(currentConfig);
-				await RespondAsync(text: "Unset game ids.");
+				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription("Unset game ids."));
 			}
-			[SlashCommand("u-user-logins", "Unset user logins (username in URL).")]
+			[SlashCommand("user-logins", "Unset user logins (username in URL).")]
 			public async Task SetUserLogins() 
 			{
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.user_logins = null;
 				guildConfig.UpdateConfig(currentConfig);
-				await RespondAsync(text: "Unset user logins.");
+				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription("Unset user logins."));
 			}
-			[SlashCommand("u-user-ids", "Unset user ids.")]
+			[SlashCommand("user-ids", "Unset user ids.")]
 			public async Task SetUserIds() 
 			{
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.user_ids = null;
 				guildConfig.UpdateConfig(currentConfig);
-				await RespondAsync(text: "Unset user ids..");
+				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription("Unset user ids."));
 			}
-			[SlashCommand("u-role", "Unset role to ping.")]
+			[SlashCommand("role", "Unset role to ping.")]
 			public async Task SetRoleId() 
 			{
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.role_id = null;
 				guildConfig.UpdateConfig(currentConfig);
-				await RespondAsync(text: "Unset role id.");
+				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription("Unset role id."));
 			}
 		}
 	}
