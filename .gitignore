@@ -1,0 +1,5 @@
+config.json
+twitch.credentials.json
+database.db
+bin/*
+obj/*

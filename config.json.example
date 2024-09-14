@@ -1,0 +1,4 @@
+{
+    "token": "bot-token",
+    "database_path": "database.db"
+}
