@@ -11,3 +11,5 @@ the bot finds config.json and twitch.credentials.json in the directory you're ru
 say you're in "C:/Users/user/Documents/bot", it will look for "C:/Users/user/Documents/bot/config.json" and "C:/Users/user/Documents/bot/twitch.credentials.json"
 
 and if your database_path is database.db, it will save the database at "C:/Users/user/Documents/bot/database.db"
+
+mostly functional(?), havent debugged enough and don't know my way around most of what i've used here

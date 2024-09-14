@@ -1,6 +1,4 @@
 using GrassGuy.Structs;
-using LinqToDB;
-using LinqToDB.Mapping;
 using Newtonsoft.Json.Linq;
 
 namespace GrassGuy;
@@ -28,7 +26,9 @@ public class GameNameIdCache(GuildConfigHandler conf, StreamHandlerConfig stream
 	
 	public async Task<string?> Parse(string gameName, string identifier) 
 	{
-		string formatted = gameName.Trim();
+		string formatted = gameName.Trim().ToLower();
+		if (isId(formatted))
+			return formatted;
 		DBOperation<GameIdPair> exists = new() 
 		{
 			identifier = identifier,
@@ -39,7 +39,7 @@ public class GameNameIdCache(GuildConfigHandler conf, StreamHandlerConfig stream
 		if (result) 
 		{
 			exists.opType = OperationType.Retrieve;
-			return (string)(await context.DoOperation(exists)).result;
+			return ((GameIdPair)(await context.DoOperation(exists)).result).id;
 		}
 		string? parsed = await ParseGameName(formatted);
 		if (parsed != null) 

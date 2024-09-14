@@ -7,16 +7,16 @@ public class EmbedUtils
 {
 	public static Embed CreateEmbedWithDescription(string description) 
 	{
-        EmbedBuilder builder = new()
-        {
-            Description = description,
-            Color = Color.Purple,
+		EmbedBuilder builder = new()
+		{
+			Description = description,
+			Color = Color.Purple,
 			Footer = new EmbedFooterBuilder
 			{
 				Text = "Made with Twitch API and Discord.NET"
 			}
-        };
-        return builder.Build();
+		};
+		return builder.Build();
 	}
 }
 
@@ -69,7 +69,7 @@ public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.isSendingStreams = active;
 				guildConfig.UpdateConfig(currentConfig);
-				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription(active ? $"Now sending streams{(currentConfig.stream_channel != null ? $" in <#{currentConfig.stream_channel}>" : "")}." : "."));
+				await RespondAsync(embed: EmbedUtils.CreateEmbedWithDescription(active ? $"Now sending streams{(currentConfig.stream_channel != null ? $" in <#{currentConfig.stream_channel}>" : "")}." : "No longer sending streams."));
 			}
 			[SlashCommand("game-names", "Set game names.")]
 			public async Task SetGameIds([Summary(description: "Game names to watch. Comma separated. Maximum of 100.")] string game_names) 
@@ -77,7 +77,14 @@ public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 				await DeferAsync();
 				GuildConfig currentConfig = await guildConfig.RetrieveConfig(Context.Guild.Id);
 				currentConfig.game_names = game_names.Split(',');
-				await cache.ParseGameNames(currentConfig.game_names);
+				try 
+				{
+					await cache.ParseGameNames(currentConfig.game_names);
+				}
+				catch (System.NullReferenceException _)
+				{
+					
+				}
 				guildConfig.UpdateConfig(currentConfig);
 				await ModifyOriginalResponseAsync((MessageProperties props) => props.Embed = EmbedUtils.CreateEmbedWithDescription($"Now watching for new streams on game names `{string.Join(", ", game_names)}`."));
 			}

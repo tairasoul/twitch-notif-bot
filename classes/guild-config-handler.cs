@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using Discord;
 using LinqToDB;
+using LinqToDB.Concurrency;
 using LinqToDB.Data;
 using LinqToDB.DataProvider.SqlServer;
 using LinqToDB.Mapping;
@@ -93,8 +95,16 @@ public class ContextWrapper(ConfigDBContext context) {
 	private Queue<DBOperation<GuildConfig>> configActive = new();
 	private Queue<DBOperation<GameIdPair>> idCacheActive = new();
 	
-	public event Action<DBOperation<GuildConfig>> configExecuted;
-	public event Action<DBOperation<GameIdPair>> idExecuted;
+	public event Action<DBOperation<GuildConfig>> configExecuted = (DBOperation<GuildConfig> _) => 
+	{
+		
+	};
+	public event Action<DBOperation<GameIdPair>> idExecuted = (DBOperation<GameIdPair> _) => 
+	{
+		
+	};
+	private bool handlingId = false;
+	private bool handlingConfig = false;
 	
 	public void StartHandlingOperations() 
 	{
@@ -104,70 +114,91 @@ public class ContextWrapper(ConfigDBContext context) {
 	
 	private async void handleId() 
 	{
-		while (true) 
+		await Task.Delay(10);
+		if (!handlingId)
+		if (idCacheActive.TryDequeue(out DBOperation<GameIdPair> config)) 
 		{
-			if (idCacheActive.TryDequeue(out DBOperation<GameIdPair> config)) 
+			if ((DBOperation<GameIdPair>?)config != null) 
 			{
-				if ((DBOperation<GameIdPair>?)config != null)
+				handlingId = true;
+				try 
+				{
 					switch (config.opType) 
 					{
 						case OperationType.Insert:
 							db.Insert(config.data);
-							idExecuted.Invoke(config);
 							break;
 						case OperationType.Retrieve:
 							config.result = db.GameIdPairs.First((v) => v.name == config.data.name);
-							idExecuted.Invoke(config);
 							break;
 						case OperationType.Contains:
 							config.result = db.GameIdPairs.Any() && db.GameIdPairs.Contains(new GameIdPair(){name = config.data.name});
-							idExecuted.Invoke(config);
 							break;
 						case OperationType.Delete:
 							db.Delete(config.data);
-							idExecuted.Invoke(config);
 							break;
 						case OperationType.Update:
 							db.Update(config.data);
-							idExecuted.Invoke(config);
 							break;
 					}
+				}
+				catch (ArgumentOutOfRangeException _) 
+				{
+					
+				}
+				catch (System.InvalidOperationException _) 
+				{
+					
+				}
+				idExecuted.Invoke(config);
+				handlingId = false;
 			}
 		}
+		_ = Task.Run(handleId);
 	}
 	
 	private async void handleConfig() 
 	{
-		while (true) 
+		await Task.Delay(20);
+		if (!handlingConfig)
+		if (configActive.TryDequeue(out DBOperation<GuildConfig> config)) 
 		{
-			if (configActive.TryDequeue(out DBOperation<GuildConfig> config)) 
+			if ((DBOperation<GuildConfig>?)config != null)
 			{
-				if ((DBOperation<GuildConfig>?)config != null)
+				handlingConfig = true;
+				try {
 					switch (config.opType) 
 					{
 						case OperationType.Insert:
 							db.Insert(config.data);
-							configExecuted.Invoke(config);
 							break;
 						case OperationType.Retrieve:
 							config.result = db.GuildConfigs.First((g) => g.guild_id == config.data.guild_id);
-							configExecuted.Invoke(config);
 							break;
 						case OperationType.Contains:
 							config.result = db.GuildConfigs.Any() && db.GuildConfigs.Contains(new GuildConfig() {guild_id = config.data.guild_id});
-							configExecuted.Invoke(config);
 							break;
 						case OperationType.Delete:
 							db.Delete(config.data);
-							configExecuted.Invoke(config);
 							break;
 						case OperationType.Update:
 							db.Update(config.data);
-							configExecuted.Invoke(config);
 							break;
 					}
+				}
+				catch (ArgumentOutOfRangeException _) 
+				{
+					
+				}
+				catch (System.InvalidOperationException _) 
+				{
+					
+				}
+				configExecuted.Invoke(config);
+				handlingConfig = false;
 			}
 		}
+		_ = Task.Run(handleConfig);
 	}
 	
 	public async Task<DBOperation<GuildConfig>> DoOperation(DBOperation<GuildConfig> operation) 
@@ -177,7 +208,7 @@ public class ContextWrapper(ConfigDBContext context) {
 			if (configActive.Any((v) => v.identifier == operation.identifier)) 
 			{
 				DBOperation<GuildConfig> config = configActive.First((v) => v.identifier == operation.identifier);
-				if (config.opType == operation.opType && (operation.opType == OperationType.Retrieve || operation.opType == OperationType.Contains)) 
+				if (config.opType == operation.opType) 
 				{
 					DBOperation<GuildConfig>? result = null;
 					void listener(DBOperation<GuildConfig> op)
@@ -227,7 +258,7 @@ public class ContextWrapper(ConfigDBContext context) {
 			if (idCacheActive.Any((v) => v.identifier == operation.identifier)) 
 			{
 				DBOperation<GameIdPair> config = idCacheActive.First((v) => v.identifier == operation.identifier);
-				if (config.opType == operation.opType && (operation.opType == OperationType.Retrieve || operation.opType == OperationType.Contains)) 
+				if (config.opType == operation.opType) 
 				{
 					DBOperation<GameIdPair>? result = null;
 					void listener(DBOperation<GameIdPair> op)
@@ -322,7 +353,17 @@ public class GuildConfigHandler(string databasePath)
 				guild_id = guildId
 			}
 		};
-		return (GuildConfig)(await wrapper.DoOperation(config)).result;
+		var result = await wrapper.DoOperation(config);
+		Console.WriteLine(result.data);
+		Console.WriteLine(result.identifier);
+		Console.WriteLine(result.opType);
+		Console.WriteLine(result.result);
+		if (result.result == null) 
+		{
+			await Task.Delay(100);
+			result = await wrapper.DoOperation(config);
+		}
+		return (GuildConfig)result.result;
 	}
 	
 	public async Task<bool> GuildHasConfig(ulong guildId) {
