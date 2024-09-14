@@ -59,7 +59,7 @@ public class StreamHandler(StreamHandlerConfig conf, string configPath)
 			if (valid.client_id != config.client_id) {
 				config.client_id = valid.client_id;
 				string fileContent = JsonSerializer.Serialize(config);
-				File.WriteAllText("/home/eva/development/c#/grass-guy-rewrite/twitch.credentials.json", fileContent);
+				File.WriteAllText(config_path, fileContent);
 			}
 			twitch_token_expiry = DateTimeOffset.UtcNow.AddSeconds(valid.expires_in).ToUnixTimeMilliseconds();
 			Console.WriteLine($"Token valid, expiry date {DateTimeOffset.FromUnixTimeMilliseconds(twitch_token_expiry)}");
@@ -96,7 +96,7 @@ public class StreamHandler(StreamHandlerConfig conf, string configPath)
 			twitch_token_expiry = DateTimeOffset.UtcNow.AddSeconds((long)responseJson.GetValue("expires_in")).ToUnixTimeMilliseconds();
 			Console.WriteLine($"Token type: {responseJson.GetValue("token_type")}");
 			string fileContent = JsonSerializer.Serialize(config);
-			File.WriteAllText("/home/eva/development/c#/grass-guy-rewrite/twitch.credentials.json", fileContent);
+			File.WriteAllText(config_path, fileContent);
 			Console.WriteLine($"New expiry: {DateTimeOffset.FromUnixTimeMilliseconds(twitch_token_expiry)}");
 		}
 		else
