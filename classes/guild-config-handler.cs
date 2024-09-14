@@ -108,29 +108,30 @@ public class ContextWrapper(ConfigDBContext context) {
 		{
 			if (idCacheActive.TryDequeue(out DBOperation<GameIdPair> config)) 
 			{
-				switch (config.opType) 
-				{
-					case OperationType.Insert:
-						db.Insert(config.data);
-						idExecuted.Invoke(config);
-						break;
-					case OperationType.Retrieve:
-						config.result = db.GameIdPairs.First((v) => v.name == config.data.name);
-						idExecuted.Invoke(config);
-						break;
-					case OperationType.Contains:
-						config.result = db.GameIdPairs.Any() && db.GameIdPairs.Contains(new GameIdPair(){name = config.data.name});
-						idExecuted.Invoke(config);
-						break;
-					case OperationType.Delete:
-						db.Delete(config.data);
-						idExecuted.Invoke(config);
-						break;
-					case OperationType.Update:
-						db.Update(config.data);
-						idExecuted.Invoke(config);
-						break;
-				}
+				if ((DBOperation<GameIdPair>?)config != null)
+					switch (config.opType) 
+					{
+						case OperationType.Insert:
+							db.Insert(config.data);
+							idExecuted.Invoke(config);
+							break;
+						case OperationType.Retrieve:
+							config.result = db.GameIdPairs.First((v) => v.name == config.data.name);
+							idExecuted.Invoke(config);
+							break;
+						case OperationType.Contains:
+							config.result = db.GameIdPairs.Any() && db.GameIdPairs.Contains(new GameIdPair(){name = config.data.name});
+							idExecuted.Invoke(config);
+							break;
+						case OperationType.Delete:
+							db.Delete(config.data);
+							idExecuted.Invoke(config);
+							break;
+						case OperationType.Update:
+							db.Update(config.data);
+							idExecuted.Invoke(config);
+							break;
+					}
 			}
 		}
 	}
@@ -141,29 +142,30 @@ public class ContextWrapper(ConfigDBContext context) {
 		{
 			if (configActive.TryDequeue(out DBOperation<GuildConfig> config)) 
 			{
-				switch (config.opType) 
-				{
-					case OperationType.Insert:
-						db.Insert(config.data);
-						configExecuted.Invoke(config);
-						break;
-					case OperationType.Retrieve:
-						config.result = db.GuildConfigs.First((g) => g.guild_id == config.data.guild_id);
-						configExecuted.Invoke(config);
-						break;
-					case OperationType.Contains:
-						config.result = db.GuildConfigs.Any() && db.GuildConfigs.Contains(new GuildConfig() {guild_id = config.data.guild_id});
-						configExecuted.Invoke(config);
-						break;
-					case OperationType.Delete:
-						db.Delete(config.data);
-						configExecuted.Invoke(config);
-						break;
-					case OperationType.Update:
-						db.Update(config.data);
-						configExecuted.Invoke(config);
-						break;
-				}
+				if ((DBOperation<GuildConfig>?)config != null)
+					switch (config.opType) 
+					{
+						case OperationType.Insert:
+							db.Insert(config.data);
+							configExecuted.Invoke(config);
+							break;
+						case OperationType.Retrieve:
+							config.result = db.GuildConfigs.First((g) => g.guild_id == config.data.guild_id);
+							configExecuted.Invoke(config);
+							break;
+						case OperationType.Contains:
+							config.result = db.GuildConfigs.Any() && db.GuildConfigs.Contains(new GuildConfig() {guild_id = config.data.guild_id});
+							configExecuted.Invoke(config);
+							break;
+						case OperationType.Delete:
+							db.Delete(config.data);
+							configExecuted.Invoke(config);
+							break;
+						case OperationType.Update:
+							db.Update(config.data);
+							configExecuted.Invoke(config);
+							break;
+					}
 			}
 		}
 	}
