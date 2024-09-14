@@ -65,14 +65,21 @@ public class StreamSender(GuildConfigHandler confs, DiscordSocketClient clien, S
 	
 	private Embed CreateEmbedForStream(Structs.Stream stream) 
 	{
-		EmbedBuilder builder = new();
-		builder.Title = stream.title;
-		builder.Description = $"{(stream.user_name != null ? stream.user_name : stream.user_login)} is streaming {stream.game_name} with {stream.viewer_count} viewers.\n[Watch](https://twitch.tv/{stream.user_login})";
+		EmbedBuilder builder = new()
+		{
+			Title = stream.title,
+			Description = $"{stream.user_name ?? stream.user_login} is streaming {stream.game_name} with {stream.viewer_count} viewers.\n[Watch](https://twitch.tv/{stream.user_login})",
+			Color = Color.Purple,
+			ImageUrl = stream.thumbnail_url.Replace("{width}", "1920").Replace("{height}", "1080"),
+			Footer = new EmbedFooterBuilder
+			{
+				Text = "Made with Twitch API and Discord.NET"
+			}
+		};
 		builder.AddField("isMature", stream.is_mature, true);
 		builder.AddField("Language", stream.language, true);
 		DateTimeOffset startTime = DateTime.Parse(stream.started_at);
 		builder.AddField("Started at", $"<t:{startTime.ToUnixTimeSeconds()}>", true);
-		builder.ImageUrl = stream.thumbnail_url.Replace("{width}", "1920").Replace("{height}", "1080");
 		return builder.Build();
 	}
 }

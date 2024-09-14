@@ -9,7 +9,12 @@ public class EmbedUtils
 	{
         EmbedBuilder builder = new()
         {
-            Description = description
+            Description = description,
+            Color = Color.Purple,
+			Footer = new EmbedFooterBuilder
+			{
+				Text = "Made with Twitch API and Discord.NET"
+			}
         };
         return builder.Build();
 	}
@@ -29,7 +34,12 @@ public class MainCommandModule : InteractionModuleBase<SocketInteractionContext>
 			GuildConfig config = await guildConfig.RetrieveConfig(Context.Guild.Id);
 			EmbedBuilder builder = new()
 			{
-				Title = $"Settings for {Context.Guild.Name}"
+				Title = $"Settings for {Context.Guild.Name}",
+				Color = Color.Purple,
+				Footer = new EmbedFooterBuilder
+				{
+					Text = "Made with Twitch API and Discord.NET"
+				}
 			};
 			builder.AddField("Game Names", config.game_names != null ? string.Join(", ", config.game_names) : "None.", true);
 			builder.AddField("User Ids", config.user_ids != null ? string.Join(", ", config.user_ids) : "None.", true);
