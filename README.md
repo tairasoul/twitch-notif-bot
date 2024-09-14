@@ -1,4 +1,4 @@
-# GrassGuyC#
+# twitch-notif-bot
 
 fuck you *rewrites your bot in c#*
 
