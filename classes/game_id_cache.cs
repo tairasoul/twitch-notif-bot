@@ -5,7 +5,7 @@ namespace GrassGuy;
 
 public class GameNameIdCache(GuildConfigHandler conf, StreamHandlerConfig streamConfig)
 {
-	private ContextWrapper context = conf.wrapper;
+	private DatabaseInfo info = conf.info;
 	private StreamHandlerConfig config = streamConfig;
 	
 	public async Task<string[]?> ParseGameNames(string[]? names) 
@@ -29,32 +29,20 @@ public class GameNameIdCache(GuildConfigHandler conf, StreamHandlerConfig stream
 		string formatted = gameName.Trim().ToLower();
 		if (isId(formatted))
 			return formatted;
-		DBOperation<GameIdPair> exists = new() 
-		{
-			identifier = identifier,
-			opType = OperationType.Contains,
-			data = new GameIdPair() { name = formatted }
-		};
-		bool result = (bool)(await context.DoOperation(exists)).result;
+		bool result = info.HasPair(formatted);
 		if (result) 
 		{
-			exists.opType = OperationType.Retrieve;
-			return ((GameIdPair)(await context.DoOperation(exists)).result).id;
+			return info.GetPair(formatted).id;
 		}
 		string? parsed = await ParseGameName(formatted);
 		if (parsed != null) 
 		{
-			DBOperation<GameIdPair> insert = new() 
+			GameIdPair pair = new() 
 			{
-				identifier = identifier,
-				opType = OperationType.Insert,
-				data = new GameIdPair() 
-				{
-					name = formatted,
-					id = parsed
-				}
+				name = formatted,
+				id = parsed
 			};
-			await context.DoOperation(insert);
+			info.AddPair(pair);
 			return parsed;
 		}
 		return null;

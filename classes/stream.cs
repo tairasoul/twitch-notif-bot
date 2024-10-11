@@ -20,9 +20,9 @@ public class StreamSender(GuildConfigHandler confs, DiscordSocketClient clien, S
 		{
 			foreach (SocketGuild guild in client.Guilds) 
 			{
-				if (!await configs.GuildHasConfig(guild.Id))
+				if (!configs.GuildHasConfig(guild.Id))
 					continue;
-				GuildConfig config = await configs.RetrieveConfig(guild.Id);
+				GuildConfig config = configs.RetrieveConfig(guild.Id);
 				if (config.isSendingStreams && config.stream_channel != null) 
 				{
 					if (streamHandler.HasRequestForGuild(guild.Id)) 

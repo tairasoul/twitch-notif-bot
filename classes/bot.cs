@@ -23,6 +23,7 @@ public class Bot
 	{
 		GatewayIntents = GatewayIntents.All,
 		AlwaysDownloadUsers = true,
+		MaxWaitBetweenGuildAvailablesBeforeReady = 1000
 	};
 	
 	private readonly StreamHandlerConfig config;
@@ -85,7 +86,7 @@ public class Bot
 		await client.LoginAsync(TokenType.Bot, _token);
 		await client.StartAsync();
 		
-		client.Ready += EnsureGuildsExist;
+		client.GuildAvailable += GuildAvailable;
 		client.JoinedGuild += GuildAvailable;
 		client.LeftGuild += GuildRemoved;
 
@@ -96,13 +97,13 @@ public class Bot
 	private async Task GuildAvailable(SocketGuild guild) 
 	{
 		GuildConfigHandler configHandler =  _services.GetRequiredService<GuildConfigHandler>();
-		await Task.Run(() => configHandler.GuildAdded(guild.Id));
+		configHandler.GuildAdded(guild.Id);
 	}
 	
 	private async Task GuildRemoved(SocketGuild guild) 
 	{
 		GuildConfigHandler configHandler =  _services.GetRequiredService<GuildConfigHandler>();
-		await Task.Run(() => configHandler.GuildRemoved(guild.Id));
+		configHandler.GuildRemoved(guild.Id);
 	}
 	
 	private async Task EnsureGuildsExist() 
@@ -111,9 +112,9 @@ public class Bot
 		GuildConfigHandler configHandler =  _services.GetRequiredService<GuildConfigHandler>();
 		foreach (SocketGuild guild in client.Guilds) 
 		{
-			if (!await (configHandler.GuildHasConfig(guild.Id))) 
+			if (!configHandler.GuildHasConfig(guild.Id)) 
 			{
-				await Task.Run(() => configHandler.GuildAdded(guild.Id));
+				configHandler.GuildAdded(guild.Id);
 			}
 		}
 		_ = Task.Run(_services.GetRequiredService<StreamSender>().DoGuildChecks);
