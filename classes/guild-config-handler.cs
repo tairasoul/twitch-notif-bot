@@ -181,7 +181,6 @@ public class GuildConfigHandler(string databasePath)
 		while (true) 
 		{
 			await Task.Delay(10000);
-			Console.WriteLine("Saving current database");
 			db.DumpInfo(info);
 		}
 	}
