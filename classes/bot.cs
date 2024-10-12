@@ -86,6 +86,7 @@ public class Bot
 		await client.LoginAsync(TokenType.Bot, _token);
 		await client.StartAsync();
 		
+		client.Ready += EnsureGuildsExist;
 		client.GuildAvailable += GuildAvailable;
 		client.JoinedGuild += GuildAvailable;
 		client.LeftGuild += GuildRemoved;
@@ -97,7 +98,8 @@ public class Bot
 	private async Task GuildAvailable(SocketGuild guild) 
 	{
 		GuildConfigHandler configHandler =  _services.GetRequiredService<GuildConfigHandler>();
-		configHandler.GuildAdded(guild.Id);
+		if (!configHandler.GuildHasConfig(guild.Id))
+			configHandler.GuildAdded(guild.Id);
 	}
 	
 	private async Task GuildRemoved(SocketGuild guild) 
