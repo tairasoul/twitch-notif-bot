@@ -180,7 +180,7 @@ public class GuildConfigHandler(string databasePath)
 	{
 		while (true) 
 		{
-			await Task.Delay(10000);
+			await Task.Delay(5000);
 			db.DumpInfo(info);
 		}
 	}
@@ -195,7 +195,7 @@ public class GuildConfigHandler(string databasePath)
 	
 	public void GuildAdded(ulong guildId) 
 	{
-		GuildConfig data = new GuildConfig() 
+		GuildConfig data = new() 
 		{
 			guild_id = guildId,
 			isSendingStreams = false
