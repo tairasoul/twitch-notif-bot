@@ -10,7 +10,7 @@ public struct DequeueItem
 
 public class UniqueQueue
 {
-	private readonly Queue<StreamGrabRequest> _queue;
+	private Queue<StreamGrabRequest> _queue;
 	private readonly HashSet<StreamGrabRequest> _set;
 	private readonly Dictionary<StreamGrabRequest, string> _hashes;
 

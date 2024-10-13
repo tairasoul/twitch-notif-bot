@@ -10,7 +10,7 @@ public class StreamHandler(StreamHandlerConfig conf, string configPath)
 	private string config_path = configPath;
 	private readonly UniqueQueue queue = new();
 	private long twitch_token_expiry = 0;
-	private StreamHandlerConfig config = conf;
+	internal StreamHandlerConfig config = conf;
 	private bool isRefreshing = false;
 
 	public async Task TwitchRefresh() 
