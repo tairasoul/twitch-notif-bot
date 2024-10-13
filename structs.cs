@@ -62,3 +62,44 @@ public struct InvalidTokenResponse
 	public uint status;
 	public string message;
 }
+
+public enum UserType 
+{
+	Admin,
+	Global_Mod,
+	Staff,
+	RegularUser
+}
+
+public enum BroadcasterType 
+{
+	Affiliate,
+	Partner,
+	Regular
+}
+
+public struct UserGrab 
+{
+	public string id;
+	public string login;
+	public string display_name;
+	public UserType type;
+	public BroadcasterType broadcasterType;
+	public string description;
+	public string profile_image_url;
+	public string offline_image_url;
+	public string created_at;
+}
+
+public struct UnparsedUserGrab 
+{
+	public string id;
+	public string login;
+	public string display_name;
+	public string type;
+	public string broadcasterType;
+	public string description;
+	public string profile_image_url;
+	public string offline_image_url;
+	public string created_at;
+}
